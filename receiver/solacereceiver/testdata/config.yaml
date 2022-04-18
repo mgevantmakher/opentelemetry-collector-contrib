@@ -1,0 +1,22 @@
+receivers:
+  solace:
+    broker: myHost:5671
+    auth:
+      plain_text:
+        username: otel
+        password: otel01$
+    queue: queue://#TRACE-profile123
+
+
+processors:
+  nop:
+
+exporters:
+  nop:
+
+service:
+  pipelines:
+    traces:
+      receivers: [solace]
+      processors: [nop]
+      exporters: [nop]

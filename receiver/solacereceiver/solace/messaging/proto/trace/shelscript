@@ -1,0 +1,14 @@
+protoc
+--go_out=./model
+--go_opt=paths=import
+--go_opt=Msolace/messaging/proto/trace/trace.proto=pdata/v1
+--go_opt=Msolace/messaging/proto/trace/telemetry.proto=pdata/v1
+solace/messaging/proto/trace/*.proto
+
+
+
+protoc
+--go_out=./model
+--go_opt=paths=import
+--go_opt=Msolace/messaging/proto/trace/receive.proto=pdata/v2
+solace/messaging/proto/trace/receive.proto
