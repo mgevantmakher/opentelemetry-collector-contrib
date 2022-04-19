@@ -780,7 +780,7 @@ replace github.com/open-telemetry/opentelemetry-collector-contrib/receiver/zooke
 // see https://github.com/google/gnostic/issues/262
 replace github.com/googleapis/gnostic v0.5.6 => github.com/googleapis/gnostic v0.5.5
 
-replace github.com/open-telemetry/opentelemetry-collector-contrib/receiver/solacereceiver => /Users/mgevantmakher/DEV/IntelliJ-workspace/opentelemetry-collector-contrib/receiver/solacereceiver
+replace github.com/open-telemetry/opentelemetry-collector-contrib/receiver/solacereceiver => ./receiver/solacereceiver
 
 // see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/4433
 exclude github.com/StackExchange/wmi v1.2.0
