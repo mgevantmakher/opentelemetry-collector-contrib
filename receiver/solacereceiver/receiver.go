@@ -130,12 +130,12 @@ func (s *solaceTraceConsumer) createConnectionConfig() (*connectConfig, error) {
 		return (nil), err
 	}
 	s.settings.Logger.Info("tls config loaded")
-	authErr, saslConnOption := ConfigureAuthentication(s.cfg)
-	s.settings.Logger.Info("auth config loaded")
+	saslConnOption, authErr := ConfigureAuthentication(s.cfg)
 	if authErr != (nil) {
 		s.settings.Logger.Info("problem with auth config")
 		return nil, authErr
 	}
+	s.settings.Logger.Info("auth config loaded")
 
 	return &connectConfig{
 		addr:       &amqpHostAddress,
@@ -222,13 +222,13 @@ reconnectionLoop:
 						return
 					}
 					cancel()
-				} else {
-					s.settings.Logger.Info(" ----defer---- SKIP closing receiver ")
-				}
+				} //else {
+				//	s.settings.Logger.Info(" ----defer---- SKIP closing receiver ")
+				//}
 			}(receiver)
 
 		}
-		s.settings.Logger.Info("  reconnection loop select is exited")
+		//	s.settings.Logger.Info("  reconnection loop select is exited")
 	}
 
 	s.settings.Logger.Info("  reconnection loop 'for' is exited")
@@ -301,9 +301,9 @@ func (s *solaceTraceConsumer) receiveMessages(ctx *context.Context, receiver *am
 		forwardErr := s.nextConsumer.ConsumeTraces(*ctx, *td)
 		if forwardErr != nil {
 			s.settings.Logger.Error("can't forward traces to the next receiver, rejecting the message", zap.Error(forwardErr))
-			e := receiver.RejectMessage(*ctx, msg, nil)
-			if e != nil {
-				return e
+			err := receiver.RejectMessage(*ctx, msg, nil)
+			if err != nil {
+				return err
 			}
 		}
 

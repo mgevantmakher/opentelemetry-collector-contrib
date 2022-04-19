@@ -102,48 +102,47 @@ type SaslExternalConfig struct {
 }
 
 // ConfigureAuthentication configures authentication in amqp.ConnOption slice
-func ConfigureAuthentication(config *Config) (error, amqp.ConnOption) {
+func ConfigureAuthentication(config *Config) (amqp.ConnOption, error) {
 
 	if config.Auth.PlainText != nil {
-		err, conOption := configurePlaintext(config.Auth.PlainText)
+		conOption, err := configurePlaintext(config.Auth.PlainText)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
-		return nil, conOption
+		return conOption, nil
 	}
 
 	if config.Auth.XAuth2 != nil {
-		err, conOption := configureXAuth2(config.Auth.XAuth2)
+		conOption, err := configureXAuth2(config.Auth.XAuth2)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
-		return nil, conOption
+		return conOption, nil
 	}
 
 	if config.Auth.External != nil {
 		err, conOption := configureExternal()
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
-		return nil, conOption
+		return conOption, nil
 	}
 
-	return errors.New("auth params not correctly configured"), nil
+	return nil, errors.New("auth params not correctly configured")
 }
 
-func configurePlaintext(config *SaslPlainTextConfig) (error, amqp.ConnOption) {
+func configurePlaintext(config *SaslPlainTextConfig) (amqp.ConnOption, error) {
 	if config.Password == "" || config.Username == "" {
-		return errors.New("missing plain text auth params: Username, Password"), nil
+		return nil, errors.New("missing plain text auth params: Username, Password")
 	}
-
-	return nil, amqp.ConnSASLPlain(config.Username, config.Password)
+	return amqp.ConnSASLPlain(config.Username, config.Password), nil
 }
 
-func configureXAuth2(config *SaslXAuth2Config) (error, amqp.ConnOption) {
+func configureXAuth2(config *SaslXAuth2Config) (amqp.ConnOption, error) {
 	if config.Bearer == "" || config.Username == "" {
-		return errors.New("missing xauth2 text auth params: Username, Bearer"), nil
+		return nil, errors.New("missing xauth2 text auth params: Username, Bearer")
 	}
-	return nil, amqp.ConnSASLXOAUTH2(config.Username, config.Bearer, saslMaxInitFrameSizeOverride)
+	return amqp.ConnSASLXOAUTH2(config.Username, config.Bearer, saslMaxInitFrameSizeOverride), nil
 }
 
 func ConfigureTLS(config *configtls.TLSClientSetting) (error, amqp.ConnOption) {

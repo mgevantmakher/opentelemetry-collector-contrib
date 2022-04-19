@@ -79,11 +79,6 @@ func (u SolaceMessageUnmarshaller) unmarshalReceiveSpanV1(message *amqp.Message)
 
 		return nil, err
 	}
-
-	u.Logger.Info("--- start Unmarshalling starttime " + string(rSpan.GetStartTimeUnixNano()))
-	u.Logger.Info("--- start Unmarshalling endtime " + string(rSpan.GetEndTimeUnixNano()))
-	u.Logger.Info("--- start Unmarshalling receive span with span " + string(rSpan.String()))
-
 	td := pdata.NewTraces()
 	rs := td.ResourceSpans().AppendEmpty()
 	rs.Resource().Attributes().InsertString("service.name", serviceName)
@@ -103,9 +98,9 @@ func (u SolaceMessageUnmarshaller) unmarshalReceiveSpanV1(message *amqp.Message)
 
 	// conditional parent-span-id
 	if len(rSpan.ParentSpanId) == 8 {
-		var parnetSpanId [8]byte
-		copy(parnetSpanId[:8], rSpan.ParentSpanId)
-		clientSpan.SetParentSpanID(pdata.NewSpanID(parnetSpanId))
+		var parentSpanId [8]byte
+		copy(parentSpanId[:8], rSpan.ParentSpanId)
+		clientSpan.SetParentSpanID(pdata.NewSpanID(parentSpanId))
 	}
 	//SPAN_KIND_CONSUMER == 5
 	clientSpan.SetKind(5)
@@ -186,22 +181,22 @@ const operationAttrValue = "receive"
 const protocolAttrKey = "messaging.protocol"
 
 const protocolVersionAttrKey = "messaging.protocol_version"
-const messageIdAttrKey = "messaging.message_id"
-const conversationIdAttrKey = "messaging.conversation_id"
+const messageIDAttrKey = "messaging.message_id"
+const conversationIDAttrKey = "messaging.conversation_id"
 const payloadSizeBytesAttrKey = "messaging.message_payload_size_bytes"
 const routerNameAttrKey = "messaging.solace.router_name"
 const messageVpnNameAttrKey = "messaging.solace.message_vpn_name"
 const clientUsernameAttrKey = "messaging.solace.client_username"
 const clientNameAttrKey = "messaging.solace.client_name"
-const replicationGroupMessageIdAttrKey = "messaging.solace.replication_group_message_id"
+const replicationGroupMessageIDAttrKey = "messaging.solace.replication_group_message_id"
 const priorityAttrKey = "messaging.solace.priority"
 const ttlAttrKey = "messaging.solace.ttl"
 const dmqEligibleAttrKey = "messaging.solace.dmq_eligible"
 const droppedEnqueueEventsSuccessAttrKey = "messaging.solace.dropped_enqueue_events_success"
 const droppedEnqueueFailedEventsAttrKey = "messaging.solace.dropped_enqueue_failed_events"
-const hostIpAttrKey = "net.host.ip"
+const hostIPAttrKey = "net.host.ip"
 const hostPortAttrKey = "net.host.port"
-const peerIpAttrKey = "net.peer.ip"
+const peerIPAttrKey = "net.peer.ip"
 const peerPortAttrKey = "net.peer.port"
 const userPropertiesPrefixAttrKey = "messaging.solace.user_properteis."
 
@@ -221,10 +216,10 @@ func (u SolaceMessageUnmarshaller) unmarshalAttributesV1(s *pdata.Span, spanData
 		atrMap.InsertString(protocolVersionAttrKey, *spanData.ProtocolVersion)
 	}
 	if spanData.ApplicationMessageId != nil {
-		atrMap.InsertString(messageIdAttrKey, *spanData.ApplicationMessageId)
+		atrMap.InsertString(messageIDAttrKey, *spanData.ApplicationMessageId)
 	}
 	if spanData.CorrelationId != nil {
-		atrMap.InsertString(conversationIdAttrKey, *spanData.CorrelationId)
+		atrMap.InsertString(conversationIDAttrKey, *spanData.CorrelationId)
 	}
 	atrMap.InsertInt(payloadSizeBytesAttrKey, int64(spanData.BinaryAttachmentSize+spanData.XmlAttachmentSize+spanData.MetadataSize))
 	if spanData.RouterName != nil {
@@ -238,7 +233,7 @@ func (u SolaceMessageUnmarshaller) unmarshalAttributesV1(s *pdata.Span, spanData
 
 	atrMap.InsertString(clientNameAttrKey, spanData.ClientName)
 
-	atrMap.InsertBytes(replicationGroupMessageIdAttrKey, spanData.ReplicationGroupMessageId)
+	atrMap.InsertBytes(replicationGroupMessageIDAttrKey, spanData.ReplicationGroupMessageId)
 
 	if spanData.Priority != nil {
 		atrMap.InsertInt(priorityAttrKey, int64(*spanData.Priority))
@@ -252,25 +247,24 @@ func (u SolaceMessageUnmarshaller) unmarshalAttributesV1(s *pdata.Span, spanData
 
 	hostIpLen := len(spanData.HostIp)
 	if hostIpLen == 4 || hostIpLen == 16 {
-		atrMap.InsertString(hostIpAttrKey, string(spanData.HostIp[:]))
+		atrMap.InsertString(hostIPAttrKey, string(spanData.HostIp[:]))
 	} else {
-		u.Logger.Warn("Host ip attribute has an illegal length of " + string(hostIpLen))
+		u.Logger.Warn("Host ip attribute has an illegallength", zap.Int("length", hostIpLen))
 	}
 	atrMap.InsertInt(hostPortAttrKey, int64(spanData.HostPort))
 
 	peerIpLen := len(spanData.HostIp)
 	if peerIpLen == 4 || peerIpLen == 16 {
-		atrMap.InsertString(peerIpAttrKey, string(spanData.PeerIp[:]))
+		atrMap.InsertString(peerIPAttrKey, string(spanData.PeerIp[:]))
 	} else {
-		u.Logger.Warn("Peer ip attribute has an illegal length of " + string(hostIpLen))
+		u.Logger.Warn("Peer ip attribute has an illegal length", zap.Int("length", peerIpLen))
 	}
-	atrMap.InsertInt(peerIpAttrKey, int64(spanData.PeerPort))
+	atrMap.InsertInt(peerPortAttrKey, int64(spanData.PeerPort))
 	// messaging.solace.user_data omitted
 
-	u.Logger.Info("-----------!!!!! ---- unmarshalling attributes---- ")
 	// user properties
 	for key, value := range solaceUserProperties {
-		u.Logger.Info("reading attribute: " + key)
+		//u.Logger.Info("reading attribute: " + key)
 		if value != nil {
 			u.insertUserPropertyV1(&atrMap, key, value.Value)
 		}

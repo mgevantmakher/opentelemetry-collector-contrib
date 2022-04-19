@@ -33,9 +33,8 @@ type ReceiverError interface {
 }
 
 type receiverError struct {
-	message   string
-	wrapped   error
-	retriable bool
+	message string
+	wrapped error
 }
 
 // setErrorInfo will set the information on the error.
@@ -55,8 +54,8 @@ func (err *receiverError) Unwrap() error {
 }
 
 // Message returns the error message.
-func (u *receiverError) Message() string {
-	return u.message
+func (err *receiverError) Message() string {
+	return err.message
 }
 
 // UnmarchallingError indicates that a AMQP messsage payload unmarshalling to Traces failed.
@@ -150,7 +149,6 @@ func newError(err ReceiverError, message string, wrapped error) ReceiverError {
 func NewVersionIncompatibleUnmarshallingError(message string, wrapped error) *VersionIncompatibleUnmarshallingError {
 	e := &VersionIncompatibleUnmarshallingError{}
 	newError(e, message, wrapped)
-	e.retriable = false
 	return e
 }
 
@@ -158,23 +156,19 @@ func NewVersionIncompatibleUnmarshallingError(message string, wrapped error) *Ve
 func NewMissingConfigurationError(message string, wrapped error, fields *[]string) *MissingConfigurationError {
 	e := &MissingConfigurationError{missingSettings: fields}
 	newError(e, message, wrapped)
-	e.retriable = false
 	return e
 }
 
 func NewUnknownMessageError(message string, wrapped error) *UnknownMessageError {
 	e := &UnknownMessageError{}
 	newError(e, message, wrapped)
-	e.retriable = false
 	return e
 }
-
 
 // NewUnmarshallingError returns a new UnmarshallingError and slice of missing required fields with the specified message and wrapped error.
 func NewUnmarshallingError(message string, wrapped error, fields *[]string) *UnmarshallingError {
 	e := &UnmarshallingError{missingFields: fields}
 	newError(e, message, wrapped)
-	e.retriable = false
 	return e
 }
 
@@ -184,7 +178,6 @@ func IsVersionIncompatibleUnmarshallingError(err error) bool {
 	}
 	return errors.As(err, &VersionIncompatibleUnmarshallingError{})
 }
-
 
 func IsUnknownMessageError(err error) bool {
 	if err == nil {
