@@ -82,12 +82,16 @@ type UnknownMessageError struct {
 	UnmarshallingError
 }
 
-func (v *UnknownMessageError) Error() string {
-	return v.Message()
+func (u *UnknownMessageError) Error() string {
+	return u.Message()
 }
 
-func (v *UnknownMessageError) Retriable() bool {
+func (u *UnknownMessageError) Retriable() bool {
 	return false
+}
+
+func (u *UnknownMessageError) Message() string {
+	return u.message
 }
 
 type VersionIncompatibleUnmarshallingError struct {
@@ -96,6 +100,10 @@ type VersionIncompatibleUnmarshallingError struct {
 
 func (v *VersionIncompatibleUnmarshallingError) Error() string {
 	return v.Message()
+}
+
+func (u *VersionIncompatibleUnmarshallingError) Message() string {
+	return u.message
 }
 
 // Retriable returns false, it is a fatal error.
@@ -110,12 +118,14 @@ func (v *VersionIncompatibleUnmarshallingError) Retriable() bool {
 
 // AuthenticationError indicates an authentication related error occurred when connecting to a remote event broker.
 // The pointer type *AuthenticationError is returned.
+// TODO make it an error (add appropriate method)
 type AuthenticationError struct {
 	receiverError
 }
 
 // ServiceUnreachableError indicates that service connection to event broker could not be established.
 // The pointer type *ServiceUnreachableError is returned.
+// TODO make it an error (add appropriate method)
 type ServiceUnreachableError struct {
 	receiverError
 }

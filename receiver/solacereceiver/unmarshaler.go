@@ -49,15 +49,15 @@ func (u SolaceMessageUnmarshaller) unmarshalV1(message *amqp.Message) (*pdata.Tr
 	messageProperties := message.Properties
 	var to = messageProperties.To
 	// # substituted with _
-	if strings.Contains(*to, "_telemetry/broker/trace/receive/v") {
-		if strings.Contains(*to, "/receive/v1") {
+	if strings.Contains(*to, "_telemetry/trace/broker/v") {
+		if strings.Contains(*to, "v1/receive") {
 			return u.unmarshalReceiveSpanV1(message)
 		} else {
 			return nil, NewVersionIncompatibleUnmarshallingError("unknown trace message type and version", (nil))
 		}
 
 	}
-	u.Logger.Info("--- UnmarshallingError: unknown trace message type and version " + *to)
+	u.Logger.Info("unknown trace message type and version " + *to)
 	return nil, NewUnknownMessageError("unknown trace message type and version", (nil))
 }
 
@@ -92,6 +92,7 @@ func (u SolaceMessageUnmarshaller) unmarshalReceiveSpanV1(message *amqp.Message)
 	var spanId [8]byte
 	copy(spanId[:8], rSpan.SpanId)
 	clientSpan.SetSpanID(pdata.NewSpanID(spanId))
+
 	var traceId [16]byte
 	copy(traceId[:16], rSpan.TraceId)
 	clientSpan.SetTraceID(pdata.NewTraceID(traceId))
@@ -101,6 +102,8 @@ func (u SolaceMessageUnmarshaller) unmarshalReceiveSpanV1(message *amqp.Message)
 		var parentSpanId [8]byte
 		copy(parentSpanId[:8], rSpan.ParentSpanId)
 		clientSpan.SetParentSpanID(pdata.NewSpanID(parentSpanId))
+	} else {
+		u.Logger.Error("parent span id is not length 8: "+string(rSpan.ParentSpanId[:])+" ", zap.Int("length", len(rSpan.ParentSpanId)))
 	}
 	//SPAN_KIND_CONSUMER == 5
 	clientSpan.SetKind(5)
