@@ -145,13 +145,6 @@ func configureXAuth2(config *SaslXAuth2Config) (amqp.ConnOption, error) {
 	return amqp.ConnSASLXOAUTH2(config.Username, config.Bearer, saslMaxInitFrameSizeOverride), nil
 }
 
-func ConfigureTLS(config *configtls.TLSClientSetting) (error, amqp.ConnOption) {
-	tlsConfig, err := config.LoadTLSConfig()
-	if err != nil {
-		return err, nil
-	}
-	return nil, amqp.ConnTLSConfig(tlsConfig)
-}
 
 func configureExternal() (error, amqp.ConnOption) {
 	// empty string is common for TLS
